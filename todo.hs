@@ -1,5 +1,7 @@
-
 {-
+
+TODO LIST in Haskell 
+
 1. 编译
  $ ghc todo.hs 
 
