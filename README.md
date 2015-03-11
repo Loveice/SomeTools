@@ -12,4 +12,4 @@
 
 + todo.hs： TODO List 
 
-+ TAPL: expriment of PL 
++ TAPL: experiments of PL. 
