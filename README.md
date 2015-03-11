@@ -1,9 +1,9 @@
-##SomeTools
+22222222222##SfdfomeToolsi
 
 
 一些小脚本
 
-
+fdfdf
 + translate: 翻译。有GUI和控制台两种版本
 
 + song.py: 操纵电脑唱歌
