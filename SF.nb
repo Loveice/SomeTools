@@ -1,0 +1,1217 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 9.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     37845,       1208]
+NotebookOptionsPosition[     32587,       1051]
+NotebookOutlinePosition[     33218,       1074]
+CellTagsIndexPosition[     33175,       1071]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["TAPL and SF", "Title",
+ CellChangeTimes->{{3.6323717292876096`*^9, 3.6323717355829697`*^9}, {
+   3.6323723464889116`*^9, 3.6323723470389433`*^9}, {3.632372389855392*^9, 
+   3.632372404356221*^9}, 3.6323754508436165`*^9, {3.6323929232309866`*^9, 
+   3.6323929262127566`*^9}}],
+
+Cell["Implementations", "Subtitle",
+ CellChangeTimes->{{3.632372366552059*^9, 3.632372379398794*^9}, {
+  3.632392936496944*^9, 3.632392940036146*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["1. Introduction", "Section",
+ CellChangeTimes->{{3.632371742640373*^9, 3.6323717465595975`*^9}, {
+  3.6323753936997166`*^9, 3.6323753941521177`*^9}}],
+
+Cell[TextData[{
+ "This is the notebook of ",
+ StyleBox["Types And Programming Language",
+  FontSlant->"Italic"],
+ " and ",
+ StyleBox["Software Foundations.",
+  FontSlant->"Italic"],
+ " In addition, there are some implementations of  languages in ",
+ StyleBox["TAPL",
+  FontSlant->"Italic"],
+ ", mostly in Sclala. "
+}], "Text",
+ CellChangeTimes->{{3.6323774510090337`*^9, 3.6323776961206436`*^9}, {
+  3.632377799568759*^9, 3.632377817432578*^9}, {3.632377914890148*^9, 
+  3.6323779203690605`*^9}}],
+
+Cell["\<\
+The topics include type theory, formal semantics, verification and compilling \
+techniques.\
+\>", "Text",
+ CellChangeTimes->{{3.6323777028490286`*^9, 3.6323777839388647`*^9}, {
+  3.6323778254088316`*^9, 3.632377891088786*^9}, {3.632526740021779*^9, 
+  3.6325267400257792`*^9}}],
+
+Cell["\<\
+Chapter 2 introduces typed arithmetic expressions. Chapter introduces simply \
+typed lambda-calculus.\
+\>", "Text",
+ CellChangeTimes->{{3.6325267698914876`*^9, 3.6325268026033583`*^9}}],
+
+Cell["", "Text",
+ CellChangeTimes->{{3.6323774510090337`*^9, 3.632377487456118*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["2. Typed Arithmetic Expressions", "Section",
+ CellChangeTimes->{{3.632371750990851*^9, 3.632371761239437*^9}, {
+  3.632375396259121*^9, 3.6323753965399218`*^9}, {3.632375968843622*^9, 
+  3.6323759744879446`*^9}, {3.6323765943361816`*^9, 3.6323765964643035`*^9}}],
+
+Cell["\<\
+Let\[CloseCurlyQuote]s begin with a typed version of a very simple language \
+with just booleans and numbers, to learn the basic ideas ideas of types, \
+typing rules, and the fundamental theorems about type systems: type \
+preservation and progress.\
+\>", "Text",
+ CellChangeTimes->{{3.6325480238741455`*^9, 3.632548108196969*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["2.1 Syntax", "Subsection",
+ CellChangeTimes->{{3.6323717684478493`*^9, 3.6323717701109447`*^9}, {
+  3.6323753996599274`*^9, 3.632375400127928*^9}}],
+
+Cell["Informally:", "Text",
+ CellChangeTimes->{{3.632377287289109*^9, 3.63237729344866*^9}, {
+  3.6325238446191716`*^9, 3.6325238490904274`*^9}}],
+
+Cell["\<\
+t ::= true 
+    | false
+    | if t then t else t 
+    | 0
+    | succ t
+    | pred t
+    | iszero t   \
+\>", "Program",
+ CellChangeTimes->{{3.6323718538007317`*^9, 3.6323720533191433`*^9}, {
+  3.6323721002388268`*^9, 3.632372217679544*^9}, {3.632372648623193*^9, 
+  3.632372704712401*^9}, {3.6323773119545155`*^9, 3.6323773183048787`*^9}, {
+  3.6325238684835367`*^9, 3.632523874282868*^9}}],
+
+Cell["\<\
+Formally, described in Coq proof assistant.\
+\>", "Text",
+ CellChangeTimes->{{3.632523878282097*^9, 3.6325238985062532`*^9}}],
+
+Cell["\<\
+Inductive tm : Type := 
+    | ttrue : tm
+    | tfalse : tm
+    | tif : tm \[Rule] tm \[Rule] tm \[Rule] tm 
+    | tzero : tm 
+    | tsucc : tm \[Rule] tm 
+    | tpred : tm \[Rule] tm
+    | tiszero : tm \[Rule] tm.  
+    
+(* Values are true, false, and numeric values...*)
+    
+Inductive bvalue : tm \[Rule] Prop := 
+    | bv_true : bvalue ttrue
+    | bv_false : bvalue tfalse. 
+
+Inductive nvalues : tm \[Rule] Prop :=
+    | nv_zero : nvalue tzero
+    | nv_succ : \[ForAll]t, nvalue t \[Rule] nvalue (tsucc t).
+    
+Definition value (t:tm) := bvalue t \[Or] nvalue t.\
+\>", "Program",
+ CellChangeTimes->{{3.6325239058296723`*^9, 3.63252392955503*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["2.2 Operational Semantics", "Subsection",
+ CellChangeTimes->{{3.6323723232155805`*^9, 3.6323723289029055`*^9}, {
+  3.632375403513134*^9, 3.6323754044647355`*^9}}],
+
+Cell["Informally", "Text",
+ CellChangeTimes->{
+  3.63252366696501*^9, {3.632523948915137*^9, 3.6325239493641624`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[" ", 
+    RowBox[{
+     RowBox[{"if", " ", "true", " ", "then", " ", 
+      SubscriptBox["t", "1"], " ", "else", " ", 
+      SubscriptBox["t", "2"]}], " ", "\[Implies]", " ", 
+     SubscriptBox["t", "1"]}]], 
+   RowBox[{"(", "ST_IfTrue", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.63252367763562*^9, 3.632523717751915*^9}, {
+  3.6325243420156207`*^9, 3.6325243571594872`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[" ", 
+    RowBox[{
+     RowBox[{"if", " ", "false", " ", "then", " ", 
+      SubscriptBox["t", "1"], "else", " ", 
+      SubscriptBox["t", "2"]}], " ", "\[Implies]", " ", 
+     SubscriptBox["t", "2"]}]], 
+   RowBox[{"(", "ST_IfFalse", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325237276954837`*^9, 3.6325237593522944`*^9}, {
+  3.63252436386287*^9, 3.632524373367414*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     SubscriptBox["t", "1"], "\[Implies]", " ", 
+     RowBox[{
+      SubscriptBox["t", "1"], "'"}]}], 
+    RowBox[{
+     RowBox[{"if", " ", 
+      SubscriptBox["t", "1"], "then", " ", 
+      SubscriptBox["t", "2"], " ", "else", " ", 
+      SubscriptBox["t", 
+       RowBox[{"3", " "}]]}], "\[Implies]", "\[IndentingNewLine]", 
+     RowBox[{"if", " ", 
+      RowBox[{
+       SubscriptBox["t", "1"], "'"}], " ", "then", " ", 
+      SubscriptBox["t", "2"], " ", "else", " ", 
+      SubscriptBox["t", "3"]}]}]], 
+   RowBox[{"(", "ST_If", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.632523975879679*^9, 3.632523977629779*^9}, {
+  3.6325244343028994`*^9, 3.632524560664127*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     SubscriptBox["t", "1"], " ", "\[Implies]", " ", 
+     RowBox[{
+      SubscriptBox["t", "1"], "'"}]}], 
+    RowBox[{
+     RowBox[{"succ", " ", 
+      SubscriptBox["t", "1"]}], " ", "\[Implies]", " ", 
+     RowBox[{"succ", " ", 
+      RowBox[{
+       SubscriptBox["t", "1"], "'"}]}]}]], 
+   RowBox[{"(", "ST_Succ", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325481597409167`*^9, 3.6325482056645436`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[" ", 
+    RowBox[{
+     RowBox[{"pred", " ", "0"}], " ", "\[Implies]", " ", "0"}]], 
+   RowBox[{"(", "ST_PredZero", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325482105408225`*^9, 3.63254822955691*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"numeric", " ", "value", " ", 
+     SubscriptBox["v", "1"]}], 
+    RowBox[{
+     RowBox[{"pred", " ", 
+      RowBox[{"(", 
+       RowBox[{"succ", " ", 
+        SubscriptBox["v", "1"]}], ")"}]}], " ", "\[Implies]", " ", 
+     SubscriptBox["v", "1"]}]], 
+   RowBox[{"(", "ST_PredSucc", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.632548254325327*^9, 3.632548287198207*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     SubscriptBox["t", "1"], " ", "\[Implies]", " ", 
+     RowBox[{
+      SubscriptBox["t", "1"], "'"}]}], 
+    RowBox[{
+     RowBox[{"pred", " ", 
+      SubscriptBox["t", "1"]}], " ", "\[Implies]", " ", 
+     RowBox[{"pred", " ", 
+      RowBox[{
+       SubscriptBox["t", "1"], "'"}]}]}]], 
+   RowBox[{"(", "ST_Pred", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325482922374954`*^9, 3.6325483455975475`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[" ", 
+    RowBox[{
+     RowBox[{"iszero", " ", "0"}], " ", "\[Implies]", " ", "true"}]], 
+   RowBox[{"(", "ST_IszeroZero", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.632548351733898*^9, 3.6325483761092925`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"numeric", " ", "value", " ", 
+     SubscriptBox["v", "1"]}], 
+    RowBox[{
+     RowBox[{"iszero", " ", 
+      RowBox[{"(", 
+       RowBox[{"succ", " ", 
+        SubscriptBox["v", "1"]}], ")"}]}], " ", "\[Implies]", " ", "false"}]], 
+   RowBox[{"(", "ST_IszeroSucc", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.632548379894509*^9, 3.6325484090051737`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     SubscriptBox["t", "1"], " ", "\[Implies]", " ", 
+     RowBox[{
+      SubscriptBox["t", "1"], "'"}]}], 
+    RowBox[{
+     RowBox[{"iszero", " ", 
+      SubscriptBox["t", "1"]}], " ", "\[Implies]", " ", 
+     RowBox[{"iszero", " ", 
+      RowBox[{
+       SubscriptBox["t", "1"], "'"}]}]}]], 
+   RowBox[{"(", "ST_Iszero", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.632548432941543*^9, 3.632548469116612*^9}}],
+
+Cell["Formally", "Text",
+ CellChangeTimes->{{3.6323754275059757`*^9, 3.632375428707178*^9}, {
+  3.632524042085466*^9, 3.632524052491061*^9}, {3.6325241887628555`*^9, 
+  3.6325242524354973`*^9}, {3.632524290155655*^9, 3.632524334187173*^9}}],
+
+Cell["\<\
+
+
+Reserved Notation \"t1 '\[DoubleRightArrow]' t2\" (at level 40).
+
+Inductive step : tm \[RightArrow] tm \[RightArrow] Prop :=
+  | ST_IfTrue : \[ForAll]t1 t2,
+      (tif ttrue t1 t2) \[DoubleRightArrow] t1
+  | ST_IfFalse : \[ForAll]t1 t2,
+      (tif tfalse t1 t2) \[DoubleRightArrow] t2
+  | ST_If : \[ForAll]t1 t1' t2 t3,
+      t1 \[DoubleRightArrow] t1' \[RightArrow]
+      (tif t1 t2 t3) \[DoubleRightArrow] (tif t1' t2 t3)
+  | ST_Succ : \[ForAll]t1 t1',
+      t1 \[DoubleRightArrow] t1' \[RightArrow]
+      (tsucc t1) \[DoubleRightArrow] (tsucc t1')
+  | ST_PredZero :
+      (tpred tzero) \[DoubleRightArrow] tzero
+  | ST_PredSucc : \[ForAll]t1,
+      nvalue t1 \[RightArrow]
+      (tpred (tsucc t1)) \[DoubleRightArrow] t1
+  | ST_Pred : \[ForAll]t1 t1',
+      t1 \[DoubleRightArrow] t1' \[RightArrow]
+      (tpred t1) \[DoubleRightArrow] (tpred t1')
+  | ST_IszeroZero :
+      (tiszero tzero) \[DoubleRightArrow] ttrue
+  | ST_IszeroSucc : \[ForAll]t1,
+       nvalue t1 \[RightArrow]
+      (tiszero (tsucc t1)) \[DoubleRightArrow] tfalse
+  | ST_Iszero : \[ForAll]t1 t1',
+      t1 \[DoubleRightArrow] t1' \[RightArrow]
+      (tiszero t1) \[DoubleRightArrow] (tiszero t1')
+
+where \"t1 '\[DoubleRightArrow]' t2\" := (step t1 t2).
+
+
+Tactic Notation \"has_type_cases\" tactic(first) ident(c) :=
+  first;
+  [ Case_aux c \"T_True\" | Case_aux c \"T_False\" | Case_aux c \"T_If\"
+  | Case_aux c \"T_Zero\" | Case_aux c \"T_Succ\" | Case_aux c \"T_Pred\"
+  | Case_aux c \"T_Iszero\" ].
+
+Hint Constructors has_type.\
+\>", "Program",
+ CellChangeTimes->{{3.632371790815129*^9, 3.6323718047109237`*^9}, {
+   3.6323722730867133`*^9, 3.632372273098714*^9}, {3.6323753238126497`*^9, 
+   3.632375370959041*^9}, 3.6323754222799664`*^9, {3.6325485128171115`*^9, 
+   3.632548539448635*^9}}]
+}, Open  ]],
+
+Cell["2.3 Normal Forms and Values", "Subsection",
+ CellChangeTimes->{{3.6325486220353584`*^9, 3.6325486323849506`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["2.4 Typing", "Subsection",
+ CellChangeTimes->{{3.6323754422168016`*^9, 3.632375444650406*^9}, {
+  3.6325486351291075`*^9, 3.632548635593134*^9}}],
+
+Cell["", "Text",
+ CellChangeTimes->{{3.632524729468782*^9, 3.632524752723112*^9}, {
+  3.6325264128770676`*^9, 3.6325264137391167`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[" ", 
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{"true", " ", "\[Element]", " ", "Bool"}]}]], 
+   RowBox[{"(", "T_True", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325246054486885`*^9, 3.6325246228236823`*^9}, {
+  3.632526127543747*^9, 3.632526160654641*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[" ", 
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{"false", " ", "\[Element]", " ", "Bool"}]}]], 
+   RowBox[{"(", "T_False", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.632526185723075*^9, 3.6325262093904285`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["t", "1"], "\[Element]", "Bool"}], "      ", 
+      "\[RightTee]", " ", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["t", "2"], "\[Element]", 
+        StyleBox["T",
+         FontSlant->"Plain"]}], 
+       StyleBox[
+        RowBox[{" ", "     "}]], "\[RightTee]", " ", 
+       RowBox[{
+        SubscriptBox["t", "3"], "\[Element]", 
+        StyleBox["T",
+         FontSlant->"Plain"]}]}]}]}], 
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{
+      RowBox[{"if", " ", 
+       SubscriptBox["t", "1"], " ", "then", " ", 
+       SubscriptBox["t", "2"], " ", "else", " ", 
+       SubscriptBox["t", "3"]}], " ", "\[Element]", " ", 
+      StyleBox["T",
+       FontSlant->"Plain"], " "}]}]], 
+   RowBox[{"(", "T_If", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325262149997497`*^9, 3.6325263714286966`*^9}, {
+  3.6325264018084345`*^9, 3.6325264054476423`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[" ", 
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{"0", " ", "\[Element]", " ", "Nat"}]}]], 
+   RowBox[{"(", "T_Zero", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325264353603535`*^9, 3.6325264587746925`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{
+      SubscriptBox["t", "1"], "\[Element]", " ", "Nat", " "}]}], 
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{
+      RowBox[{"succ", " ", 
+       SubscriptBox["t", "1"]}], " ", "\[Element]", " ", "Nat", " "}]}]], 
+   RowBox[{"(", "T_Succ", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.632526467088168*^9, 3.632526504064283*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{
+      SubscriptBox["t", "1"], "\[Element]", " ", "Nat", " "}]}], 
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{
+      RowBox[{"pred", " ", 
+       SubscriptBox["t", "1"]}], " ", "\[Element]", " ", "Nat", " "}]}]], 
+   RowBox[{"(", "T_Pred", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325265573523307`*^9, 3.6325265719281645`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{
+      SubscriptBox["t", "1"], "\[Element]", " ", "Nat", " "}]}], 
+    RowBox[{"\[RightTee]", " ", 
+     RowBox[{
+      RowBox[{"iszero", " ", 
+       SubscriptBox["t", "1"]}], " ", "\[Element]", " ", "Bool", " "}]}]], 
+   RowBox[{"(", "T_IsZero", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.63252658145971*^9, 3.632526607848219*^9}}],
+
+Cell["\<\
+Inductive ty : Type := 
+  | TBool : ty
+  | TNat : ty.
+  
+  
+Reserved Notation \"'|-' t '\\in' T\" (at level 40).
+
+Inductive has_type : tm -> ty -> Prop :=
+  | T_True : 
+       |- ttrue \\in TBool
+  | T_False : 
+       |- tfalse \\in TBool
+  | T_If : forall t1 t2 t3 T,
+       |- t1 \\in TBool ->
+       |- t2 \\in T ->
+       |- t3 \\in T ->
+       |- tif t1 t2 t3 \\in T
+  | T_Zero : 
+       |- tzero \\in TNat
+  | T_Succ : forall t1,
+       |- t1 \\in TNat ->
+       |- tsucc t1 \\in TNat
+  | T_Pred : forall t1,
+       |- t1 \\in TNat ->
+       |- tpred t1 \\in TNat
+  | T_Iszero : forall t1,
+       |- t1 \\in TNat ->
+       |- tiszero t1 \\in TBool
+
+where \"'|-' t '\\in' T\" := (has_type t T).
+
+  
+\
+\>", "Program",
+ CellChangeTimes->{{3.6325255855117445`*^9, 3.6325255885149164`*^9}, {
+  3.632525650152442*^9, 3.6325256763099384`*^9}}]
+}, Open  ]],
+
+Cell["2.5 Canonical forms", "Subsection",
+ CellChangeTimes->{{3.6325486633767233`*^9, 3.6325486799216695`*^9}}],
+
+Cell["2.6 Progress", "Subsection",
+ CellChangeTimes->{{3.632548682448814*^9, 3.632548686337036*^9}}],
+
+Cell["2.7 Type Preservation", "Subsection",
+ CellChangeTimes->{{3.6325486886571693`*^9, 3.632548693953472*^9}}],
+
+Cell["2.8 Type Soundness", "Subsection",
+ CellChangeTimes->{{3.6325486959935884`*^9, 3.6325487085693083`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["2.9 The interpreter", "Subsection",
+ CellChangeTimes->{{3.632375575670009*^9, 3.6323755961099205`*^9}, {
+  3.632376327528719*^9, 3.6323763307119017`*^9}, {3.6325487116804857`*^9, 
+  3.632548712113511*^9}}],
+
+Cell["\<\
+We will use Scala to implement all the interpreters. \
+\>", "Text",
+ CellChangeTimes->{{3.632376737560938*^9, 3.6323767559599905`*^9}}],
+
+Cell["", "Subsubsection",
+ CellChangeTimes->{{3.6323766064902735`*^9, 3.632376611232545*^9}, 
+   3.632376924239973*^9}],
+
+Cell[CellGroupData[{
+
+Cell[" Syntax", "Subsubsection",
+ CellChangeTimes->{{3.632376615183771*^9, 3.632376623161227*^9}, {
+   3.632376659096472*^9, 3.632376660008524*^9}, 3.6323769260480766`*^9, {
+   3.63254872049699*^9, 3.6325487210810237`*^9}}],
+
+Cell["\<\
+Firstly, to define a type of Scala values representating terms. In Ocaml , we \
+can sue datatype definition , and Scala\[CloseCurlyQuote]s case class \
+machanism also mathes. \
+\>", "Text",
+ CellChangeTimes->{{3.6323769565936213`*^9, 3.6323770955845623`*^9}}],
+
+Cell["\<\
+sealed trait Ty
+case object TyBool extends Ty
+case object TyNat extends Ty
+
+sealed trait Term
+case object TmTrue extends Term
+case object TmFalse extends Term
+case class TmIf(cond: Term, t1: Term, t2: Term) extends Term
+case object TmZero extends Term
+case class TmSucc(t: Term) extends Term
+case class TmPred(t: Term) extends Term
+case class TmIsZero(t: Term) extends Term
+
+sealed trait Command
+case class Eval(t: Term) extends Command
+
+import scala.text.Document
+import scala.text.Document._
+
+object PrettyPrinter {
+  import util.Print._
+
+  def ptyType(outer: Boolean, ty: Ty): Document = ty match {
+    case ty1 => ptyAType(outer, ty1)
+  }
+
+  def ptyAType(outer: Boolean, ty: Ty): Document = ty match {
+    case TyBool => \"Bool\"
+    case TyNat  => \"Nat\"
+    case ty1    => \"(\" :: ptyAType(outer, ty1) :: \")\"
+  }
+
+  def ptyTy(ty: Ty) = ptyType(true, ty)
+
+  def ptmTerm(outer: Boolean, t: Term): Document = t match {
+
+    case TmIf(t1, t2, t3) =>
+      val ifB = g2(\"if\" :/: ptmTerm(outer, t1))
+      val thenB = g2(\"then\" :/: ptmTerm(outer, t2))
+      val elseB = g2(\"else\" :/: ptmTerm(outer, t3))
+      g0(ifB :/: thenB :/: elseB)
+    case t => ptmAppTerm(outer, t)
+
+  }
+
+  def ptmAppTerm(outer: Boolean, t: Term): Document = t match {
+    case TmPred(t1) =>
+      \"pred \" :: ptmATerm(false, t1)
+    case TmIsZero(t1) =>
+      \"iszero \" :: ptmATerm(false, t1)
+    case t =>
+      ptmATerm(outer, t)
+  }
+
+  def ptmATerm(outer: Boolean, t: Term): Document = t match {
+    case TmTrue =>
+      \"true\"
+    case TmFalse =>
+      \"false\"
+    case TmZero =>
+      \"0\"
+    case TmSucc(t1) =>
+      def pf(i: Int, t: Term): Document = t match {
+        case TmZero =>
+          i.toString()
+        case TmSucc(s) =>
+          pf(i + 1, s)
+        case _ =>
+          \"(succ \" :: ptmATerm(false, t1) :: \")\"
+      }
+      pf(1, t1)
+    case t =>
+      \"(\" :: ptmTerm(outer, t) :: \")\"
+  }
+
+  def ptm(t: Term) = ptmTerm(true, t)
+
+}\
+\>", "Program",
+ CellChangeTimes->{3.632376697523053*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Parser", "Subsubsection",
+ CellChangeTimes->{{3.632376626304407*^9, 3.632376637072221*^9}, 
+   3.6323769316323957`*^9, 3.632377147472927*^9, {3.6325487276724005`*^9, 
+   3.6325487287054596`*^9}}],
+
+Cell["\<\
+We use the parser combinator library, like Parsec for Haskell.\
+\>", "Text",
+ CellChangeTimes->{{3.632377204528776*^9, 3.6323772616246414`*^9}}],
+
+Cell["\<\
+import scala.util.parsing.combinator.ImplicitConversions
+import scala.util.parsing.combinator.syntactical.StandardTokenParsers
+
+object ArithParsers extends StandardTokenParsers with ImplicitConversions {
+  lexical.reserved += (\"true\", \"false\", \"if\", \"then\", \"else\", \
+\"iszero\", \"succ\", \"pred\")
+  lexical.delimiters += (\"(\", \")\", \";\")
+
+  private def topLevel: Parser[List[Command]] =
+    (command <~ \";\") ~ topLevel ^^ { case c ~ cs => c :: cs } | \
+success(List())
+
+  private def command: Parser[Command] =
+    term ^^ Eval
+
+  private def term: Parser[Term] = appTerm |
+    (\"if\" ~> term) ~ (\"then\" ~> term) ~ (\"else\" ~> term) ^^ TmIf
+
+  private def appTerm: Parser[Term] =
+    aTerm |
+      \"succ\" ~> aTerm ^^ TmSucc |
+      \"pred\" ~> aTerm ^^ TmPred |
+      \"iszero\" ~> aTerm ^^ TmIsZero
+
+  //  Atomic terms are ones that never require extra parentheses
+  private def aTerm: Parser[Term] =
+    \"(\" ~> term <~ \")\" |
+      \"true\" ^^ { _ => TmTrue } |
+      \"false\" ^^ { _ => TmFalse } |
+      numericLit ^^ { x => num(x.toInt) }
+
+  private def num(x: Int): Term = x match {
+    case 0 => TmZero
+    case _ => TmSucc(num(x - 1))
+  }
+
+  private def eof: Parser[String] = elem(\"<eof>\", _ == lexical.EOF) ^^ { \
+_.chars }
+
+  def input(s: String) = phrase(topLevel)(new lexical.Scanner(s)) match {
+    case t if t.successful => t.get
+    case t                 => error(t.toString)
+  }
+}\
+\>", "Program",
+ CellChangeTimes->{3.6323773725105653`*^9}]
+}, Open  ]],
+
+Cell["Core(Evaluation etc.)", "Subsubsection",
+ CellChangeTimes->{{3.6323766406480246`*^9, 3.632376655704278*^9}, {
+  3.6323769000825915`*^9, 3.6323769344205556`*^9}, {3.6325487332407193`*^9, 
+  3.6325487342247753`*^9}}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+3. The Simply Typed Lambda-Calculus\
+\>", "Section",
+ CellChangeTimes->{{3.632371790815129*^9, 3.6323718047109237`*^9}, 
+   3.6323722730867133`*^9, {3.6323825138120995`*^9, 3.6323825160502276`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["3.1 Syntax", "Subsection",
+ CellChangeTimes->{{3.6323830986191263`*^9, 3.632383099762192*^9}, {
+  3.632548759058196*^9, 3.632548759801238*^9}}],
+
+Cell["", "Text",
+ CellChangeTimes->{{3.6323826992342997`*^9, 3.6323827203941097`*^9}, {
+  3.632382768753474*^9, 3.632382795421599*^9}}],
+
+Cell["Informal concrete syntax:", "Text",
+ CellChangeTimes->{{3.6323826992342997`*^9, 3.6323827203941097`*^9}, {
+  3.632382768753474*^9, 3.6323828053941693`*^9}}],
+
+Cell["\<\
+t ::= x                       variable
+    | \[Lambda]x:T1.t2                abstraction
+    | t1 t2                   application
+    | true                    constant true
+    | false                   constant false
+    | if t1 then t2 else t3   conditional\
+\>", "Program",
+ CellChangeTimes->{{3.6323718538007317`*^9, 3.6323720533191433`*^9}, {
+  3.6323721002388268`*^9, 3.6323722399678187`*^9}, {3.6323761545280356`*^9, 
+  3.6323762201999855`*^9}, {3.6323828231541853`*^9, 3.6323828282104745`*^9}}],
+
+Cell["\<\
+The variable x is the paremeter to the function: the term t2 is its body. The \
+annotation :T specifies the type of arguments that the function can be \
+applied to.\
+\>", "Text",
+ CellChangeTimes->{{3.6323762708724833`*^9, 3.632376273160614*^9}, {
+  3.632382848154214*^9, 3.632382916875942*^9}}],
+
+Cell["Some examples:", "Text",
+ CellChangeTimes->{{3.6323762708724833`*^9, 3.632376273160614*^9}, {
+  3.632382848154214*^9, 3.6323829232983093`*^9}}],
+
+Cell["\[Lambda]x:Bool. x    ", "Item1",
+ CellChangeTimes->{{3.632382938075353*^9, 3.6323829952016163`*^9}}],
+
+Cell["\<\
+         The identify function for booleans\
+\>", "Text",
+ CellChangeTimes->{{3.632382997907771*^9, 3.6323830160980096`*^9}}],
+
+Cell["In Coq", "Text",
+ CellChangeTimes->{{3.6323762708724833`*^9, 3.632376273160614*^9}, 
+   3.632382848154214*^9}],
+
+Cell["\<\
+Module STLC.
+
+Inductive ty : Type := 
+  | TBool : ty 
+  | TArrow : ty -> ty -> ty.
+  
+Inductive tm : Type :=
+  | tvar : id -> tm
+  | tapp : tm -> tm -> tm
+  | tabs : id -> ty -> tm -> tm
+  | ttrue : tm
+  | tfalse : tm
+  | tif : tm -> tm -> tm -> tm.\
+\>", "Program",
+ CellChangeTimes->{{3.6323830437547903`*^9, 3.6323830722870207`*^9}, {
+  3.632526838379405*^9, 3.632526876467583*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Operational Semantics", "Subsection",
+ CellChangeTimes->{{3.6323831056735296`*^9, 3.6323831097057605`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Values", "Subsubsection",
+ CellChangeTimes->{{3.6323831276677876`*^9, 3.6323831284018297`*^9}}],
+
+Cell["\<\
+[x:=s]x = s
+[x:=s]y = y                                   if x \[NotEqual] y
+[x:=s](\\x:T11.t12)   = \\x:T11. t12      
+[x:=s](\\y:T11.t12)   = \\y:T11. [x:=s]t12      if x \[NotEqual] y
+[x:=s](t1 t2)        = ([x:=s]t1) ([x:=s]t2)       
+[x:=s]true           = true
+[x:=s]false          = false
+[x:=s](if t1 then t2 else t3) = 
+                 if [x:=s]t1 then [x:=s]t2 else [x:=s]t3\
+\>", "Program",
+ CellChangeTimes->{{3.632526962408499*^9, 3.632527087875675*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Substitution", "Subsubsection",
+ CellChangeTimes->{{3.6323831419464016`*^9, 3.6323831451065826`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"value", " ", 
+     SubscriptBox["v", "2"]}], 
+    RowBox[{
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\\", 
+        RowBox[{"x", ":", 
+         RowBox[{"T", ".", 
+          SubscriptBox["t", "12"]}]}]}], ")"}], 
+      SubscriptBox["v", "2"]}], " ", "\[Implies]", " ", 
+     RowBox[{
+      RowBox[{"[", 
+       RowBox[{"x", ":=", 
+        SubscriptBox["v", "2"]}], "]"}], 
+      SubscriptBox["t", "12"]}]}]], 
+   RowBox[{"(", "ST_AppAbs", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325271241927524`*^9, 3.632527171552461*^9}, {
+  3.6325272736623015`*^9, 3.6325273446393614`*^9}}]
+}, Open  ]],
+
+Cell["Reduction", "Subsubsection",
+ CellChangeTimes->{{3.632392803716957*^9, 3.63239280814881*^9}, {
+  3.6323928413243065`*^9, 3.6323928421163516`*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Typing", "Subsection",
+ CellChangeTimes->{{3.632527364884519*^9, 3.6325273657965713`*^9}}],
+
+Cell["", "Text",
+ CellChangeTimes->{{3.6325275363923287`*^9, 3.6325275469079304`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     RowBox[{"\[CapitalGamma]", " ", "x"}], " ", "=", " ", "T", " "}], 
+    RowBox[{"\[CapitalGamma]", " ", "\[RightTee]", " ", 
+     RowBox[{"x", " ", "\[Element]", " ", "T", " "}]}]], 
+   RowBox[{"(", "T_Var", ")"}], " "}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325276330328565`*^9, 3.632527668799902*^9}, {
+  3.632527927567703*^9, 3.6325279727202854`*^9}, {3.632528039136084*^9, 
+  3.632528060799323*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"\[CapitalGamma]", ",", " ", 
+     RowBox[{"x", ":", 
+      RowBox[{
+       SubscriptBox["T", "11"], " ", "\[RightTee]", " ", 
+       RowBox[{
+        SubscriptBox["t", "12"], " ", "\[Element]", " ", 
+        SubscriptBox["T", "12"]}]}]}]}], 
+    RowBox[{
+     RowBox[{"\[CapitalGamma]", " ", "\[RightTee]", " ", 
+      RowBox[{"\[Lambda]x", ":", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["T", "11"], ".", 
+         SubscriptBox["t", "12"]}], " ", "\[Element]", " ", 
+        SubscriptBox["T", "11"]}]}]}], "\[Rule]", 
+     SubscriptBox["T", "12"]}]], 
+   RowBox[{"(", "T_Abs", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.632527671680067*^9, 3.6325277982323055`*^9}, {
+   3.632527932712997*^9, 3.6325279350571313`*^9}, {3.63252798994427*^9, 
+   3.6325279911373386`*^9}, {3.6325280688487835`*^9, 3.63252811494642*^9}, 
+   3.63252815201554*^9}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{
+     RowBox[{
+      RowBox[{"\[CapitalGamma]", " ", "\[RightTee]", " ", 
+       RowBox[{
+        SubscriptBox["t", "1"], " ", "\[Element]", " ", 
+        SubscriptBox["T", "11"]}]}], "\[Rule]", 
+      SubscriptBox["T", "12"]}], "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalGamma]", " ", "\[RightTee]", " ", 
+      RowBox[{
+       SubscriptBox["t", "2"], " ", "\[Element]", " ", 
+       SubscriptBox["T", "11"]}]}]}], 
+    RowBox[{"\[CapitalGamma]", " ", "\[RightTee]", " ", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["t", "1"], " ", 
+       SubscriptBox["t", 
+        RowBox[{"2", " "}]]}], " ", "\[Element]", " ", 
+      SubscriptBox["T", "12"]}]}]], 
+   RowBox[{"(", "T_App", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325278090089216`*^9, 3.632527919534243*^9}, {
+  3.6325281258080416`*^9, 3.6325281371236887`*^9}, {3.632528185384449*^9, 
+  3.6325282184033375`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[" ", 
+    RowBox[{"\[CapitalGamma]", " ", "\[RightTee]", " ", 
+     RowBox[{"true", " ", "\[Element]", " ", "Bool", " "}]}]], 
+   RowBox[{"(", "T_True", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325282455378895`*^9, 3.632528272350423*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[" ", 
+    RowBox[{"\[CapitalGamma]", " ", "\[RightTee]", " ", 
+     RowBox[{"false", " ", "\[Element]", " ", "Bool", " "}]}]], 
+   RowBox[{"(", "T_False", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325282860962095`*^9, 3.6325283111266413`*^9}}],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   FractionBox[
+    RowBox[{"\[CapitalGamma]", " ", "\[RightTee]", " ", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["t", "1"], " ", "\[Element]", " ", 
+       RowBox[{"Bool", "      ", "\[CapitalGamma]"}]}], " ", "\[RightTee]", 
+      " ", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["t", "2"], " ", "\[Element]", " ", 
+        RowBox[{"T", "      ", "\[CapitalGamma]"}]}], " ", "\[RightTee]", " ", 
+       RowBox[{
+        SubscriptBox["t", "3"], " ", "\[Element]", " ", "T"}]}]}]}], 
+    RowBox[{"\[CapitalGamma]", " ", "\[RightTee]", " ", 
+     RowBox[{
+      RowBox[{"if", " ", 
+       SubscriptBox["t", "1"], " ", "then", " ", 
+       SubscriptBox["t", "2"], " ", "else", " ", 
+       SubscriptBox["t", "3"]}], " ", "\[Element]", " ", "T"}]}]], 
+   RowBox[{"(", "T_If", ")"}]}], TraditionalForm]], "Equation",
+ CellChangeTimes->{{3.6325283151558714`*^9, 3.6325284256711926`*^9}}],
+
+Cell["", "Text",
+ CellChangeTimes->{{3.6325280120915375`*^9, 3.6325280175158477`*^9}}],
+
+Cell["", "Text",
+ CellChangeTimes->{{3.63252741017811*^9, 3.632527432979414*^9}}],
+
+Cell["x= T", "Text",
+ CellChangeTimes->{3.6325280349318438`*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Extensions to STLC", "Section",
+ CellChangeTimes->{{3.6325284894928427`*^9, 3.6325285025075874`*^9}, {
+  3.632528719623006*^9, 3.632528723460225*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Simple Extensions to STLC", "Subsection",
+ CellChangeTimes->{{3.6325285052857466`*^9, 3.6325285128041763`*^9}}],
+
+Cell["Numbers", "Subsubsection",
+ CellChangeTimes->{{3.6325285281890564`*^9, 3.63252853035618*^9}}],
+
+Cell["let-bindings", "Subsubsection",
+ CellChangeTimes->{{3.632528533340351*^9, 3.6325285358834963`*^9}}],
+
+Cell["Pairs", "Subsubsection",
+ CellChangeTimes->{{3.632528552668456*^9, 3.6325285541795425`*^9}}],
+
+Cell["Unit", "Subsubsection",
+ CellChangeTimes->{{3.6325285629480443`*^9, 3.632528563556079*^9}}],
+
+Cell["Sums", "Subsubsection",
+ CellChangeTimes->{{3.632528578379927*^9, 3.632528578907957*^9}}],
+
+Cell["Lists", "Subsubsection",
+ CellChangeTimes->{{3.6325285910126495`*^9, 3.6325285930757675`*^9}}],
+
+Cell["General Recursion", "Subsubsection",
+ CellChangeTimes->{{3.632528602804324*^9, 3.6325286062355204`*^9}}],
+
+Cell["Records", "Subsubsection",
+ CellChangeTimes->{{3.6325286173401556`*^9, 3.632528618628229*^9}}]
+}, Open  ]],
+
+Cell["Formalizing the Extensions", "Subsection",
+ CellChangeTimes->{{3.632528650501052*^9, 3.6325286585245113`*^9}}]
+}, Open  ]],
+
+Cell["Typechecking for STLC", "Section",
+ CellChangeTimes->{{3.632528709820445*^9, 3.632528733948825*^9}}],
+
+Cell["Subtyping", "Section",
+ CellChangeTimes->{{3.632528691451394*^9, 3.6325286932364964`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["The Imp Language", "Section",
+ CellChangeTimes->{{3.632528854932745*^9, 3.632528858045923*^9}, {
+  3.6325490953214293`*^9, 3.6325490962574825`*^9}}],
+
+Cell["\<\
+Z ::= X;;
+Y ::= 1;;
+WHILE not (Z = 0) DO
+  Y ::= Y * Z;;
+  Z ::= Z - 1
+END\
+\>", "Program",
+ CellChangeTimes->{{3.632528874988892*^9, 3.6325289199724655`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Syntax", "Subsection",
+ CellChangeTimes->{{3.632549105265998*^9, 3.632549106721081*^9}}],
+
+Cell["Informally,", "Text",
+ CellChangeTimes->{{3.632549116595646*^9, 3.63254912016185*^9}}],
+
+Cell["\<\
+a ::= nat
+    | a + a
+    | a - a
+    | a * a
+
+b ::= true
+    | false
+    | a = a
+    | a <= a
+    | not b
+    | b and b\
+\>", "Program",
+ CellChangeTimes->{{3.6325491309774685`*^9, 3.6325491738009176`*^9}}]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{707, 589},
+WindowMargins->{{Automatic, 12}, {Automatic, -27}},
+PrintingCopies->1,
+PrintingPageRange->{32000, 32000},
+PrintingOptions->{"Magnification"->1.,
+"PaperOrientation"->"Portrait",
+"PaperSize"->{595.1999999999999, 841.8}},
+Magnification->1.3000000715255737`,
+FrontEndVersion->"9.0 for Microsoft Windows (32-bit) (2013\:5e742\:670813\
+\:65e5)",
+StyleDefinitions->FrontEnd`FileName[{"Article"}, "JournalArticle.nb", 
+  CharacterEncoding -> "CP936"]
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[579, 22, 280, 4, 100, "Title"],
+Cell[862, 28, 150, 2, 36, "Subtitle"],
+Cell[CellGroupData[{
+Cell[1037, 34, 155, 2, 65, "Section"],
+Cell[1195, 38, 496, 14, 52, "Text"],
+Cell[1694, 54, 287, 6, 29, "Text"],
+Cell[1984, 62, 195, 4, 29, "Text"],
+Cell[2182, 68, 84, 1, 29, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[2303, 74, 268, 3, 65, "Section"],
+Cell[2574, 79, 341, 6, 75, "Text"],
+Cell[CellGroupData[{
+Cell[2940, 89, 153, 2, 44, "Subsection"],
+Cell[3096, 93, 145, 2, 29, "Text"],
+Cell[3244, 97, 399, 12, 165, "Program"],
+Cell[3646, 111, 135, 3, 29, "Text"],
+Cell[3784, 116, 660, 22, 416, "Program"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[4481, 143, 168, 2, 44, "Subsection"],
+Cell[4652, 147, 118, 2, 29, "Text"],
+Cell[4773, 151, 445, 11, 51, "Equation"],
+Cell[5221, 164, 442, 11, 51, "Equation"],
+Cell[5666, 177, 754, 21, 87, "Equation"],
+Cell[6423, 200, 491, 15, 61, "Equation"],
+Cell[6917, 217, 272, 7, 50, "Equation"],
+Cell[7192, 226, 452, 13, 61, "Equation"],
+Cell[7647, 241, 491, 15, 61, "Equation"],
+Cell[8141, 258, 280, 7, 48, "Equation"],
+Cell[8424, 267, 437, 12, 61, "Equation"],
+Cell[8864, 281, 493, 15, 61, "Equation"],
+Cell[9360, 298, 240, 3, 29, "Text"],
+Cell[9603, 303, 1781, 47, 879, "Program"]
+}, Open  ]],
+Cell[11399, 353, 119, 1, 44, "Subsection"],
+Cell[CellGroupData[{
+Cell[11543, 358, 151, 2, 40, "Subsection"],
+Cell[11697, 362, 135, 2, 29, "Text"],
+Cell[11835, 366, 332, 8, 48, "Equation"],
+Cell[12170, 376, 283, 7, 48, "Equation"],
+Cell[12456, 385, 1010, 30, 61, "Equation"],
+Cell[13469, 417, 279, 7, 48, "Equation"],
+Cell[13751, 426, 445, 12, 61, "Equation"],
+Cell[14199, 440, 449, 12, 61, "Equation"],
+Cell[14651, 454, 449, 12, 61, "Equation"],
+Cell[15103, 468, 852, 36, 667, "Program"]
+}, Open  ]],
+Cell[15970, 507, 111, 1, 44, "Subsection"],
+Cell[16084, 510, 100, 1, 40, "Subsection"],
+Cell[16187, 513, 111, 1, 40, "Subsection"],
+Cell[16301, 516, 110, 1, 40, "Subsection"],
+Cell[CellGroupData[{
+Cell[16436, 521, 211, 3, 40, "Subsection"],
+Cell[16650, 526, 145, 3, 29, "Text"],
+Cell[16798, 531, 119, 2, 31, "Subsubsection"],
+Cell[CellGroupData[{
+Cell[16942, 537, 223, 3, 31, "Subsubsection"],
+Cell[17168, 542, 269, 5, 52, "Text"],
+Cell[17440, 549, 2023, 80, 1555, "Program"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[19500, 634, 201, 3, 31, "Subsubsection"],
+Cell[19704, 639, 154, 3, 29, "Text"],
+Cell[19861, 644, 1499, 46, 976, "Program"]
+}, Open  ]],
+Cell[21375, 693, 220, 3, 31, "Subsubsection"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[21644, 702, 208, 4, 65, "Section"],
+Cell[CellGroupData[{
+Cell[21877, 710, 149, 2, 44, "Subsection"],
+Cell[22029, 714, 135, 2, 29, "Text"],
+Cell[22167, 718, 162, 2, 29, "Text"],
+Cell[22332, 722, 514, 10, 146, "Program"],
+Cell[22849, 734, 305, 6, 52, "Text"],
+Cell[23157, 742, 149, 2, 29, "Text"],
+Cell[23309, 746, 107, 1, 22, "Item1"],
+Cell[23419, 749, 135, 3, 29, "Text"],
+Cell[23557, 754, 116, 2, 29, "Text"],
+Cell[23676, 758, 395, 16, 281, "Program"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[24108, 779, 113, 1, 44, "Subsection"],
+Cell[CellGroupData[{
+Cell[24246, 784, 101, 1, 31, "Subsubsection"],
+Cell[24350, 787, 478, 11, 204, "Program"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[24865, 803, 107, 1, 31, "Subsubsection"],
+Cell[24975, 806, 669, 21, 61, "Equation"]
+}, Open  ]],
+Cell[25659, 830, 152, 2, 31, "Subsubsection"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[25848, 837, 96, 1, 44, "Subsection"],
+Cell[25947, 840, 86, 1, 29, "Text"],
+Cell[26036, 843, 488, 11, 58, "Equation"],
+Cell[26527, 856, 937, 24, 61, "Equation"],
+Cell[27467, 882, 962, 25, 89, "Equation"],
+Cell[28432, 909, 310, 7, 48, "Equation"],
+Cell[28745, 918, 314, 7, 48, "Equation"],
+Cell[29062, 927, 934, 23, 61, "Equation"],
+Cell[29999, 952, 86, 1, 29, "Text"],
+Cell[30088, 955, 81, 1, 29, "Text"],
+Cell[30172, 958, 64, 1, 29, "Text"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[30285, 965, 156, 2, 65, "Section"],
+Cell[CellGroupData[{
+Cell[30466, 971, 117, 1, 44, "Subsection"],
+Cell[30586, 974, 99, 1, 31, "Subsubsection"],
+Cell[30688, 977, 105, 1, 31, "Subsubsection"],
+Cell[30796, 980, 98, 1, 31, "Subsubsection"],
+Cell[30897, 983, 97, 1, 31, "Subsubsection"],
+Cell[30997, 986, 95, 1, 31, "Subsubsection"],
+Cell[31095, 989, 100, 1, 31, "Subsubsection"],
+Cell[31198, 992, 110, 1, 31, "Subsubsection"],
+Cell[31311, 995, 100, 1, 31, "Subsubsection"]
+}, Open  ]],
+Cell[31426, 999, 116, 1, 44, "Subsection"]
+}, Open  ]],
+Cell[31557, 1003, 106, 1, 65, "Section"],
+Cell[31666, 1006, 96, 1, 37, "Section"],
+Cell[CellGroupData[{
+Cell[31787, 1011, 154, 2, 37, "Section"],
+Cell[31944, 1015, 169, 8, 146, "Program"],
+Cell[CellGroupData[{
+Cell[32138, 1027, 94, 1, 44, "Subsection"],
+Cell[32235, 1030, 92, 1, 29, "Text"],
+Cell[32330, 1033, 217, 13, 243, "Program"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
