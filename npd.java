@@ -23,7 +23,8 @@ public class Test {
     	if (x != null) 
     		y = new Object(); 
         if (y != null) 
-        	return x.hashCode() + y.hashCode(); 
+        	return x.hashCode() + 
+        	       y.hashCode(); 
         else 
         	return x.hashCode();
     }
@@ -36,7 +37,8 @@ public class Test {
     	if (x != null) 
     		y = "y"; 
     	if (y != null) 
-    		return x.hashCode + y.hashCode(); 
+    		return x.hashCode() + 
+    		       y.hashCode(); 
     	else 
     		return x.hashCode()  
     }
@@ -50,18 +52,18 @@ public class Test {
 
     int intra6(Object x) {
     	if (x == null) {
-    		Ojbect y = x; 
+    		Object y = x; 
     		return x.hashCode(); 
     	}
     	return 0; 
     }
 
-    private helper1(Object x, boolean b) {
+    private int helper1(Object x, boolean b) {
     	if (b) return 0; 
     	return x.hashCode(); 
     }
 
-    private helper2(Object x) {
+    private int helper2(Object x) {
     	return x.hashCode(); 
     }
 
